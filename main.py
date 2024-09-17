@@ -33,7 +33,7 @@ def register_user(user: UserCreate, db: Session = Depends(get_db)):
     if existing_user:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Username or email already exists"
+            detail="Usuario o correo existente"
         )
     
     new_user = UserModel(username=user.username, email=user.email)
