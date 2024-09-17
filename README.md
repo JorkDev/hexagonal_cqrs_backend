@@ -19,6 +19,37 @@ Este proyecto tiene como objetivo la creación de un backend con una arquitectur
 - **Python 3.8+**
 - **MySQL** instalado y configurado en tu máquina.
 
+## Instrucciones de Configuración
+
+### Opción 1: Usando Docker
+
+1. Clona el repositorio del proyecto:
+   ```bash
+   git clone https://github.com/JorkDev/hexagonal_cqrs_backend
+   cd hexagonal_cqrs_backend
+   ```
+
+2. Ejecuta el proyecto usando Docker Compose:
+   ```bash
+   docker-compose up --build
+   ```
+
+3. La aplicación estará disponible en `http://localhost:8000`.
+
+### Opción 2: Configuración manual
+
+1. Clona el repositorio del proyecto:
+   ```bash
+   git clone https://github.com/JorkDev/hexagonal_cqrs_backend
+   cd hexagonal_cqrs_backend
+   ```
+
+2. Crea y activa un entorno virtual (opcional pero recomendado):
+   ```bash
+   python3 -m venv venv
+   source venv/bin/activate  # En Windows: venv\Scriptsctivate
+   ```
+
 ### Instalación de dependencias:
 
 Primero, es necesario crear un entorno virtual en Python para aislar las dependencias del proyecto. Si no tienes `virtualenv` instalado, puedes instalarlo con:
