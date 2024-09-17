@@ -1,26 +1,73 @@
-from fastapi import FastAPI, Depends, HTTPException
+from fastapi import FastAPI, Depends, HTTPException, status
 from sqlalchemy.orm import Session
-from application.commands.register_user_command import RegisterUserCommand
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+from infrastructure.database.models import Base, UserModel
 from infrastructure.repositories.user_repository import UserRepository
-from pydantic import BaseModel, EmailStr, constr
-from infrastructure.database.connection import get_db
+from application.commands.register_user_command import RegisterUserCommand
+from application.queries.get_user_query import GetUserQuery
+from uuid import UUID
+from pydantic import BaseModel, EmailStr, constr, validator
+import os
+
+SQLALCHEMY_DATABASE_URL = "mysql+pymysql://backend_user:ventoaureo999!@localhost/hexagonal_cqrs_backend"
+
+engine = create_engine(SQLALCHEMY_DATABASE_URL)
+
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+
+Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
 
 class UserCreate(BaseModel):
-    username: constr(min_length=3, max_length=50, regex=r'^[a-zA-Z0-9_]+$')
+    username: constr(regex=r'^[a-zA-Z_]+$', min_length=3, max_length=50)
     email: EmailStr
+
+    @validator('username', 'email')
+    def strip_spaces(cls, value):
+        return value.strip()
+
+    @validator('email')
+    def lowercase_email(cls, value):
+        return value.lower()
+
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
+
+@app.get("/")
+def read_root():
+    return {"message": "Bienvenido al Backend con Arquitectura Hexagonal y CQRS"}
 
 @app.post("/register/")
 def register_user(user: UserCreate, db: Session = Depends(get_db)):
     repo = UserRepository(db)
-    command = RegisterUserCommand(repo)
-    try:
-        new_user = command.handle(user.username, user.email)
-        return {"message": "Usuario registrado satisfactoriamente", "user": new_user}
-    except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
 
-@app.get("/")
-def read_root():
-    return {"mensaje": "Bienvenido al Backend con Arquitectura Hexagonal y CQRS"}
+    existing_user = db.query(UserModel).filter(
+        (UserModel.username == user.username) | (UserModel.email == user.email)
+    ).first()
+
+    if existing_user:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Username or email already exists."
+        )
+
+    command = RegisterUserCommand(repo)
+    new_user = command.handle(user.username, user.email)
+    return {"message": "User registered successfully", "user": new_user}
+
+@app.get("/user/{user_id}")
+def get_user(user_id: UUID, db: Session = Depends(get_db)):
+    repo = UserRepository(db)
+    query = GetUserQuery(repo)
+    user = query.handle(user_id)
+    
+    if user is None:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    return user
