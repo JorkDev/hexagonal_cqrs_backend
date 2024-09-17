@@ -1,4 +1,8 @@
-class User:
-    def __init__(self, username: str, email: str):
-        self.username = username
-        self.email = email
+from pydantic import BaseModel
+from typing import Optional
+from uuid import UUID
+
+class User(BaseModel):
+    id: Optional[UUID]
+    username: str
+    email: str
