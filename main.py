@@ -1,4 +1,5 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Depends
+from sqlalchemy.orm import Session
 from sqlalchemy import create_engine, Column, Integer, String
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
@@ -21,6 +22,21 @@ class UserModel(Base):
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
+
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
+
+@app.post("/register/")
+def register_user(username: str, email: str, db: Session = Depends(get_db)):
+    new_user = UserModel(username=username, email=email)
+    db.add(new_user)
+    db.commit()
+    db.refresh(new_user)
+    return {"message": "Usuario registrado satisfactoriamente", "user": new_user}
 
 @app.get("/")
 def read_root():
