@@ -10,7 +10,7 @@ engine = create_engine(SQLALCHEMY_DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 class UserCreate(BaseModel):
-    username: constr(min_length=3, max_length=50, regex=r'^[a-zA-Z0-9_]+$')
+    username: constr(min_length=3, max_length=50, pattern=r'^[a-zA-Z0-9_]+$')
     email: EmailStr
 
     @validator('username')
