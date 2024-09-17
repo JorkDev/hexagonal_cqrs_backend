@@ -10,7 +10,7 @@ from uuid import UUID
 from pydantic import BaseModel, EmailStr, constr, validator
 import os
 
-SQLALCHEMY_DATABASE_URL = "mysql+pymysql://backend_user:ventoaureo999!@localhost/hexagonal_cqrs_backend"
+SQLALCHEMY_DATABASE_URL = "mysql+pymysql://new_user:new_password@localhost/hexagonal_cqrs_backend"
 
 engine = create_engine(SQLALCHEMY_DATABASE_URL)
 
@@ -21,7 +21,7 @@ Base.metadata.create_all(bind=engine)
 app = FastAPI()
 
 class UserCreate(BaseModel):
-    username: constr(regex=r'^[a-zA-Z_]+$', min_length=3, max_length=50)
+    username: constr(pattern=r'^[a-zA-Z_]+$', min_length=3, max_length=50)
     email: EmailStr
 
     @validator('username', 'email')
@@ -54,12 +54,12 @@ def register_user(user: UserCreate, db: Session = Depends(get_db)):
     if existing_user:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Username or email already exists."
+            detail="Usuario y/o email existente"
         )
 
     command = RegisterUserCommand(repo)
     new_user = command.handle(user.username, user.email)
-    return {"message": "User registered successfully", "user": new_user}
+    return {"message": "Usuario registrado satisfactoriamente", "user": new_user}
 
 @app.get("/user/{user_id}")
 def get_user(user_id: UUID, db: Session = Depends(get_db)):
@@ -68,6 +68,6 @@ def get_user(user_id: UUID, db: Session = Depends(get_db)):
     user = query.handle(user_id)
     
     if user is None:
-        raise HTTPException(status_code=404, detail="User not found")
+        raise HTTPException(status_code=404, detail="Usuario no encontrado")
     
     return user
