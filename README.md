@@ -157,3 +157,4 @@ El proyecto ha sido desarrollado para demostrar los principios de la arquitectur
 
 Agradecemos tu tiempo y estamos abiertos a cualquier consulta técnica adicional a través del contacto proporcionado.
 
+![Vista Previa](https://i.imgur.com/kcMev97.png)
